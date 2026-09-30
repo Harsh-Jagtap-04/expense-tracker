@@ -69,25 +69,41 @@ User Input: "${text}"
     required: ['isConfident', 'transactions'],
   }
 
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-        responseSchema: responseSchema,
-        temperature: 0.1,
-      },
-    })
+  let attempt = 0
+  const maxRetries = 3
 
-    if (!response.text) {
-      throw new Error('Failed to generate content from AI.')
+  while (attempt < maxRetries) {
+    try {
+      const response = await ai.models.generateContent({
+        model: 'gemini-3.6-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          responseSchema: responseSchema,
+          temperature: 0.1,
+        },
+      })
+
+      if (!response.text) {
+        throw new Error('Failed to generate content from AI.')
+      }
+
+      const parsed = JSON.parse(response.text)
+      return { success: true, data: parsed } // Now returns an array
+    } catch (error: any) {
+      attempt++
+      console.error(`Error parsing transaction (Attempt ${attempt}/${maxRetries}):`, error)
+      
+      // If it's the last attempt, return the error
+      if (attempt >= maxRetries) {
+        return { success: false, error: error.message || 'Failed to parse transaction.' }
+      }
+      
+      // Wait before retrying (exponential backoff: 1s, 2s)
+      await new Promise(resolve => setTimeout(resolve, attempt * 1000))
     }
-
-    const parsed = JSON.parse(response.text)
-    return { success: true, data: parsed } // Now returns an array
-  } catch (error: any) {
-    console.error('Error parsing transaction:', error)
-    return { success: false, error: error.message || 'Failed to parse transaction.' }
   }
+
+  // Fallback return, though the loop should handle it
+  return { success: false, error: 'Failed to parse transaction after retries.' }
 }
