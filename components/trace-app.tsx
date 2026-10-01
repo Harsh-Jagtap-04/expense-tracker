@@ -453,7 +453,7 @@ function Log({ transactions, categories, transactionTypes, personTags, investmen
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <div className="relative flex size-12 shrink-0 items-center justify-center rounded-lg border border-input bg-background text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors overflow-hidden">
               <CalendarDays size={20} />
-              <input type="date" value={txDate} onChange={e => setTxDate(e.target.value)} className="absolute inset-0 h-full w-[200%] -translate-x-1/4 opacity-0 cursor-pointer" title={`Selected date: ${txDate}`} />
+              <input type="date" value={txDate} onChange={e => setTxDate(e.target.value)} onClick={e => { if ('showPicker' in e.currentTarget) e.currentTarget.showPicker() }} className="absolute inset-0 h-full w-full opacity-0 cursor-pointer" title={`Selected date: ${txDate}`} />
             </div>
             <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') submit() }} placeholder="e.g. Spent ₹32 on dinner" className="h-12 flex-1 rounded-lg border border-input bg-background px-4 text-sm outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring" />
             <button disabled={saving} onClick={submit} className="h-12 rounded-lg bg-primary px-5 text-sm font-semibold text-primary-foreground disabled:opacity-60 whitespace-nowrap">{saving ? 'Saving…' : 'Add transaction'}</button>
